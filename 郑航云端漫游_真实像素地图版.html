@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>云端漫游 · 郑州航空航天大学校园探索</title>
+<style>
+:root{--deep:#0B1633;--navy:#13244F;--tech:#2783DE;--cyan:#3FD0E0;--grass:#46A171;--orange:#F29A3B;--paper:#F7F4EC;--ink:#1D2236;--muted:#8A93AD}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--deep);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;overflow:hidden}
+button{font-family:inherit;cursor:pointer}
+.px{font-family:"Courier New",monospace;letter-spacing:.08em}
+.screen{position:fixed;inset:0;display:none}
+.screen.on{display:block}
+/* ---------- 首页 ---------- */
+#home{overflow-y:auto;background:radial-gradient(ellipse at 70% 10%,#1d3a7a 0%,var(--deep) 60%)}
+#stars{position:fixed;inset:0;pointer-events:none}
+nav{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:20px 40px;max-width:1120px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.logo i{width:14px;height:14px;background:var(--cyan);box-shadow:4px 4px 0 var(--tech);display:inline-block}
+nav a{color:rgba(255,255,255,.7);text-decoration:none;margin-left:24px;font-size:14px}
+nav a:hover{color:#fff}
+.hero{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:56px 40px 32px;display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center}
+.eyebrow{color:var(--cyan);font-size:13px;margin-bottom:16px}
+.hero h1{font-size:52px;line-height:1.15;margin-bottom:20px}
+.hero h1 span{color:var(--cyan)}
+.hero p{color:rgba(255,255,255,.72);font-size:17px;line-height:1.7;margin-bottom:32px;max-width:480px}
+.btn{display:inline-flex;align-items:center;gap:10px;border:none;background:var(--orange);color:#1b1206;font-weight:700;font-size:17px;padding:16px 28px;box-shadow:0 4px 0 #9b5a17;transition:transform .1s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #9b5a17}
+.btn.ghost{background:transparent;color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.hero-art{width:100%;aspect-ratio:4/3;image-rendering:pixelated;border:2px solid rgba(255,255,255,.12)}
+.features{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:32px 40px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.feat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:28px}
+.feat b{display:block;font-size:13px;color:var(--cyan);margin-bottom:12px}
+.feat h3{font-size:20px;margin-bottom:8px}
+.feat p{color:rgba(255,255,255,.65);font-size:15px;line-height:1.6}
+.about{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:24px 40px 64px;color:rgba(255,255,255,.5);font-size:13px;line-height:1.7}
+/* ---------- 游戏 ---------- */
+#game{background:#000}
+#cv{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;display:block}
+.hud{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;pointer-events:none}
+.hud>*{pointer-events:auto}
+.panel{background:rgba(11,22,51,.88);border:2px solid #2b4380;padding:10px 14px;font-size:14px}
+.stamps-mini{display:flex;gap:6px;margin-top:6px}
+.stamps-mini i{width:14px;height:14px;background:#2b3a66;display:block}
+.stamps-mini i.got{background:var(--orange)}
+.hud .tools{display:flex;gap:8px}
+.hbtn{background:rgba(11,22,51,.9);color:#fff;border:2px solid #2b4380;padding:9px 14px;font-size:14px;white-space:nowrap}
+@media (max-width:520px){.hud{top:10px;left:10px;right:10px}.panel{padding:8px 10px;font-size:13px}.hud .tools{gap:6px}.hbtn{padding:8px 9px;font-size:13px}#toast{top:70px;max-width:88vw;white-space:normal;text-align:center}}
+.hbtn:hover{border-color:var(--cyan)}
+#hint{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);background:var(--paper);color:var(--ink);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--orange);padding:12px 20px;font-size:16px;font-weight:700;display:none;white-space:nowrap;cursor:pointer}
+#hint kbd{background:var(--ink);color:#fff;padding:2px 8px;margin:0 4px;font-family:inherit}
+#toast{position:absolute;left:50%;top:80px;transform:translateX(-50%);background:var(--orange);color:#1b1206;font-weight:700;padding:12px 22px;border:3px solid #1b1206;display:none;z-index:6}
+.dpad{position:absolute;left:20px;bottom:24px;display:none;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:4px}
+.dpad button{background:rgba(11,22,51,.75);border:2px solid #2b4380;color:#fff;font-size:20px;touch-action:none}
+.dpad .c{visibility:hidden}
+.abtn{position:absolute;right:24px;bottom:48px;width:76px;height:76px;border-radius:50%;background:var(--orange);border:3px solid #1b1206;font-weight:700;font-size:18px;display:none;touch-action:none}
+.legend{position:absolute;right:16px;bottom:16px;font-size:12px;color:rgba(255,255,255,.6)}
+@media (hover:none),(max-width:820px){.dpad{display:grid}.abtn{display:block}.legend{display:none}#hint{bottom:210px}}
+/* ---------- 弹窗 ---------- */
+.modal{position:fixed;inset:0;background:rgba(5,10,25,.7);display:none;align-items:center;justify-content:center;z-index:10;padding:20px}
+.modal.on{display:flex}
+.card{background:var(--paper);color:var(--ink);border:4px solid var(--ink);box-shadow:8px 8px 0 var(--tech);width:min(560px,100%);max-height:88vh;overflow-y:auto;padding:28px 32px}
+.card .tag{display:inline-block;background:var(--ink);color:var(--cyan);font-size:12px;padding:4px 10px;margin-bottom:12px}
+.card h2{font-size:26px;margin-bottom:12px}
+.card p{font-size:16px;line-height:1.7;color:#3b4058;margin-bottom:12px}
+.card .story{background:#fff;border-left:4px solid var(--orange);padding:12px 16px;font-size:15px}
+.quiz{margin-top:20px;border-top:2px dashed #c9c3b3;padding-top:16px}
+.quiz h4{font-size:16px;margin-bottom:12px}
+.opt{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--ink);padding:11px 14px;margin-bottom:8px;font-size:15px;color:var(--ink)}
+.opt:hover{background:#eef5ff}
+.opt.ok{background:#dff3e6;border-color:var(--grass)}
+.opt.no{background:#fde8e6;border-color:#E56458}
+.row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.b2{background:var(--ink);color:#fff;border:none;padding:11px 20px;font-size:15px;font-weight:700}
+.b2.alt{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+.got-stamp{display:flex;align-items:center;gap:14px;background:#fff3e3;border:2px solid var(--orange);padding:12px 16px;margin-top:16px;font-weight:700}
+.journal-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:16px 0}
+.jitem{background:#fff;border:2px solid #d9d3c3;padding:12px;display:flex;gap:12px;align-items:center}
+.jitem.lock{opacity:.45}
+.jitem canvas{flex:none}
+.jitem b{display:block;font-size:15px}
+.jitem small{color:var(--muted);font-size:12px}
+.progress{height:12px;background:#e3ddcd;margin:8px 0 4px}
+.progress div{height:100%;background:var(--orange)}
+#memCv{width:100%;border:2px solid var(--ink);image-rendering:pixelated}
+@media (max-width:820px){nav{padding:16px 20px}nav .links{display:none}.hero{grid-template-columns:1fr;padding:24px 20px;gap:28px}.hero h1{font-size:36px}.features{grid-template-columns:1fr;padding:20px}.about{padding:20px 20px 48px}.journal-list{grid-template-columns:1fr}.card{padding:22px 20px}}
+#mini-map{position:absolute;right:16px;bottom:44px;width:170px;height:199px;border:3px solid #0B1633;background:#d5d9e0;box-shadow:0 6px 18px rgba(0,0,0,.3);z-index:5;image-rendering:auto}
+@media (max-width:820px){#mini-map{width:96px;height:112px;right:10px;bottom:auto;top:70px;border-width:2px}.hud .lbl{display:none}.hud .hbtn{padding:6px 7px !important;font-size:12px !important}.hud .panel{padding:6px 8px !important}.hud .tools{gap:4px !important}}
+</style>
+</head>
+<body>
+
+<!-- ================= 首页 ================= -->
+<section id="home" class="screen on">
+  <canvas id="stars"></canvas>
+  <nav>
+    <div class="logo"><i></i>云端漫游 · 郑航校园</div>
+    <div class="links"><a href="#feat">核心功能</a><a href="#about">项目说明</a><a href="#" id="navJournal">探索手帐</a></div>
+  </nav>
+  <div class="hero">
+    <div>
+      <div class="eyebrow px">ZUA · PIXEL CAMPUS EXPLORER</div>
+      <h1>走进像素校园<br>开启一次<span>云端漫游</span></h1>
+      <p>操控角色在郑州航空航天大学的像素地图中自由行走，靠近地标解锁校园故事，完成航空航天知识任务，收集印章并生成属于你的数字纪念卡。</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <button class="btn" id="startBtn">▶ 开始校园漫游</button>
+        <button class="btn ghost" id="resetBtn">重置进度</button>
+      </div>
+    </div>
+    <canvas class="hero-art" id="heroArt" width="320" height="240"></canvas>
+  </div>
+  <div class="features" id="feat">
+    <div class="feat"><b class="px">01 / EXPLORE</b><h3>自由探索</h3><p>方向键 / WASD 行走，手机端使用虚拟方向键，在校园道路间自由漫游。</p></div>
+    <div class="feat"><b class="px">02 / MISSION</b><h3>任务驱动</h3><p>靠近地标触发信息卡，回答航空航天知识问答即可解锁地标。</p></div>
+    <div class="feat"><b class="px">03 / MEMORY</b><h3>数字纪念</h3><p>收集全部地标印章，在探索手帐中回顾，并生成可保存的纪念卡。</p></div>
+  </div>
+  <div class="about" id="about">项目说明：本网站为环境/交互设计概念原型。像素地图依据郑州航空航天大学校园平面图转绘，建筑名称与位置按平面图标注，形状与比例经像素化简化；地标介绍仅根据平面图信息撰写，对外发布前请核实文字及标识使用权限。</div>
+</section>
+
+<!-- ================= 地图 ================= -->
+<section id="game" class="screen">
+  <canvas id="cv"></canvas>
+  <div class="hud">
+    <div class="panel"><div><span class="lbl">印章进度 </span><b id="cnt">0</b> / <span id="tot">0</span></div><div class="stamps-mini" id="mini"></div></div>
+    <div class="tools">
+      <button class="hbtn" id="jBtn">📒 手帐</button>
+      <button class="hbtn" id="mBtn">🎫 纪念卡</button>
+      <button class="hbtn" id="homeBtn">首页</button>
+    </div>
+  </div>
+  <canvas id="mini-map" width="170" height="199"></canvas>
+  <div id="hint"></div>
+  <div id="toast"></div>
+  <div class="dpad" id="dpad">
+    <button class="c"></button><button data-d="up">▲</button><button class="c"></button>
+    <button data-d="left">◀</button><button class="c"></button><button data-d="right">▶</button>
+    <button class="c"></button><button data-d="down">▼</button><button class="c"></button>
+  </div>
+  <button class="abtn" id="aBtn">查看</button>
+  <div class="legend">方向键 / WASD 移动 · 空格 / E 互动 · 地图依据校园平面图转绘</div>
+</section>
+
+<!-- 地标弹窗 -->
+<div class="modal" id="lmModal"><div class="card" id="lmCard"></div></div>
+<!-- 手帐 -->
+<div class="modal" id="jModal"><div class="card" id="jCard"></div></div>
+<!-- 纪念卡 -->
+<div class="modal" id="mModal"><div class="card">
+  <span class="tag px">MEMORY CARD</span><h2>我的校园漫游纪念卡</h2>
+  <canvas id="memCv" width="640" height="420"></canvas>
+  <div class="row"><button class="b2 alt" data-close="mModal">关闭</button><button class="b2" id="saveCard">保存为图片</button></div>
+</div></div>
+
+<script>
+/* ================== 数据：地标（依据校园平面图位置） ================== */
+// 坐标单位：像素，与校园平面图（1030×1200）基本 1:1 对应
+const LANDMARKS=[
+ {id:'nanmen',name:'南门',glyph:'南',en:'SOUTH GATE',color:'#E56458',r:[496,950,540,990],
+  intro:'校园南侧主入口，紧邻相济路。由此向北，经行政办公楼与宿舍区即可到达校园东西主路。',
+  story:'漫游从这里开始。跟着橙色标记，把整座校园走一遍。',
+  q:'人类第一次有动力、可操纵的持续飞行由谁完成？',opts:['莱特兄弟','李林塔尔','布莱里奥'],a:0},
+ {id:'center',name:'中心广场',glyph:'场',en:'CENTRAL PLAZA',color:'#3FD0E0',r:[336,788,414,862],
+  intro:'位于宿舍区之间的开敞空间，北接校园东西向主路，西侧是 1–3 号楼，东侧是 7–9 号楼。',
+  story:'傍晚从宿舍出来，这里是最常路过的地方。',
+  q:'中国空间站的名称是？',opts:['和平号','天宫','自由号'],a:1},
+ {id:'dongyuan',name:'东苑餐厅',glyph:'食',en:'EAST CANTEEN',color:'#F29A3B',r:[522,735,598,805],
+  intro:'位于南门东北侧，周边有超市和“航大拾光里”。',
+  story:'“今天吃什么”是每天都要认真回答的问题。',
+  q:'航天器绕地球做圆周运动所需的最小发射速度（第一宇宙速度）约为？',opts:['7.9 km/s','11.2 km/s','16.7 km/s'],a:0},
+ {id:'jx01',name:'01 基础教学楼',glyph:'教',en:'TEACHING BUILDING 01',color:'#7E78D0',r:[233,594,334,756],
+  intro:'分 A、B、C 三座，位于西门主路南侧、校园中轴西边。',
+  story:'课间的走廊和楼前道路，是很多人校园记忆开始的地方。',
+  q:'飞机机翼产生升力，通常用哪一原理来解释？',opts:['阿基米德原理','伯努利原理','胡克定律'],a:1},
+ {id:'lib',name:'图书馆',glyph:'书',en:'LIBRARY',color:'#C77B5A',r:[402,505,513,600],
+  intro:'坐落在沁湖西岸、校园中轴东侧，北邻综合楼与航空文化馆。',
+  story:'窗外就是沁湖，靠窗的位置总是最早被占满。',
+  q:'中国第一颗人造地球卫星的名字是？',opts:['东方红一号','神舟一号','天宫一号'],a:0},
+ {id:'qinhu',name:'沁湖',glyph:'湖',en:'QIN LAKE',color:'#3D8FD0',r:[470,480,672,612],
+  intro:'校园中部的景观湖，西接图书馆，湖南侧是一片绿岛。',
+  story:'沿湖走一圈，是自习间隙最好的放空方式。',
+  q:'世界上第一颗人造地球卫星由哪个国家发射？',opts:['美国','苏联','法国'],a:1},
+ {id:'aero',name:'航空文化馆',glyph:'航',en:'AVIATION CULTURE HALL',color:'#2783DE',r:[402,374,517,474],
+  intro:'位于综合楼内，北邻 06 综合实验实训楼，南临图书馆与沁湖。',
+  story:'把校名里的“航空航天”，变成看得见的故事。',
+  q:'2003 年乘神舟五号进入太空的中国首位航天员是？',opts:['聂海胜','杨利伟','翟志刚'],a:1},
+ {id:'uav',name:'无人机研究院',glyph:'机',en:'UAV INSTITUTE',color:'#5AAEE0',r:[90,170,205,310],
+  intro:'位于校园西北角，与创新创业中心同处一栋建筑，南侧是小竹林。',
+  story:'转过小竹林，就能看到这栋蓝色的楼。',
+  q:'“无人机”常用的英文缩写是？',opts:['UAV','GPS','ISS'],a:0},
+ {id:'gym',name:'体育馆',glyph:'体',en:'GYMNASIUM',color:'#46A171',r:[840,500,935,620],
+  intro:'位于东门南侧，与东区体育场、篮球场和球场一起组成运动片区。',
+  story:'傍晚的跑道上，总有人在追赶落日。',
+  q:'2019 年实现人类首次月球背面软着陆的探测器是？',opts:['嫦娥三号','嫦娥四号','玉兔一号'],a:1},
+];
+const QUIZ_NOTE='问答为通用航空航天常识；地标位置依据校园平面图，介绍文字正式发布前请核实。';
+
+/* ================== 存档 ================== */
+const KEY='zua-roam-v2';
+let save=JSON.parse(localStorage.getItem(KEY)||'{}');
+save.got=(save.got||[]).filter(id=>LANDMARKS.some(l=>l.id===id));
+function persist(){localStorage.setItem(KEY,JSON.stringify(save))}
+
+/* ================== 地图：依据校园平面图转绘（64×75 瓦片，每瓦 16px） ================== */
+const T=16,W=64,H=75;
+const G=0,R=1,B=2,WA=3,TR=4,PL=5,TK=6,FD=7,CT=8,OUT=9,ST=10,BB=11;
+const map=Array.from({length:H},()=>Array(W).fill(G));
+function inside(x,y){
+ if(x<44||x>1012||y<96||y>1185)return false;
+ if(y>705+(965-x)*0.608)return false;              // 相济路（东南斜向边界）
+ if(y>700&&x<44+Math.pow((y-700)/460,2)*190)return false; // 西南弧形边界
+ return true;
+}
+const inT=(i,j)=>inside(i*T+8,j*T+8);
+for(let j=0;j<H;j++)for(let i=0;i<W;i++){
+ if(inT(i,j))continue;
+ let near=false;for(let dj=-2;dj<=2&&!near;dj++)for(let di=-2;di<=2;di++){const a=i+di,b=j+dj;if(a>=0&&b>=0&&a<W&&b<H&&inT(a,b)){near=true;break}}
+ map[j][i]=near?ST:OUT;
+}
+const set=(i,j,v)=>{if(i>=0&&j>=0&&i<W&&j<H&&inT(i,j))map[j][i]=v};
+// 覆盖式（道路/场地）：矩形触及的瓦片全部写入
+function area(x1,y1,x2,y2,v){for(let j=Math.floor(y1/T);j<=Math.floor((y2-1)/T);j++)for(let i=Math.floor(x1/T);i<=Math.floor((x2-1)/T);i++)set(i,j,v)}
+// 中心式（建筑）：瓦片中心落在矩形内才写入
+function solidArea(x1,y1,x2,y2,v){for(let j=Math.ceil((y1-8)/T);j*T+8<y2;j++)for(let i=Math.ceil((x1-8)/T);i*T+8<x2;i++)set(i,j,v)}
+function line(x1,y1,x2,y2,w,v){const n=Math.ceil(Math.hypot(x2-x1,y2-y1)/4);for(let k=0;k<=n;k++){const x=x1+(x2-x1)*k/n,y=y1+(y2-y1)*k/n;area(x-w/2,y-w/2,x+w/2,y+w/2,v)}}
+function ellipse(cx,cy,rx,ry,v){for(let j=0;j<H;j++)for(let i=0;i<W;i++){const x=i*T+8,y=j*T+8;if(((x-cx)/rx)**2+((y-cy)/ry)**2<=1)set(i,j,v)}}
+
+// 1) 场地：竹林、球场、跑道
+area(90,330,205,400,BB);                                   // 小竹林
+area(190,918,266,1066,TK);area(206,934,250,1050,FD);       // 西区体育场
+area(760,488,832,628,TK);area(776,504,816,612,FD);         // 东区体育场
+[[176,826,226,898],[135,925,185,1005],[282,918,318,945],[282,1025,318,1060],[715,495,750,625],[805,470,935,490],[805,630,935,648]].forEach(r=>area(...r,CT));
+// 2) 水体
+ellipse(565,552,112,76,WA);ellipse(655,500,40,26,WA);      // 沁湖
+ellipse(582,655,68,42,G);                                  // 湖南绿岛
+ellipse(142,628,24,18,WA);                                 // 月牙湖
+// 3) 道路
+const ROADS=[[56,128,640,152],[56,128,76,770],[205,128,229,770],[336,96,352,776],[384,96,400,776],
+ [229,276,640,292],[229,410,336,424],[44,532,400,578],[400,354,560,370],[60,758,600,776],
+ [690,440,712,880],[700,440,1012,462],[700,652,925,670],[776,670,790,770],[846,670,860,770],
+ [586,688,602,880],[505,776,525,990],[414,776,430,965],[318,776,335,1060],[120,898,335,914],
+ [160,578,176,898],[229,776,245,898]];
+ROADS.forEach(r=>area(...r,R));
+line(600,144,702,448,18,R);line(640,292,560,362,14,R);line(560,362,702,452,14,R);line(490,762,600,694,14,R);
+area(336,788,414,862,PL);area(352,802,398,846,WA);         // 中心广场与水池
+// 4) 建筑（名称、位置与校园平面图一致）
+const BLDS=[
+ ['无人机研究院 · 创新创业中心',90,170,205,310,'research','uav'],
+ ['国际教育实训基地',90,420,205,510,'green'],
+ ['07 专业教学楼',235,165,330,270,'teach'],['05 专业教学楼',233,298,334,408,'teach'],
+ ['03 专业教学楼',233,428,334,526,'teach'],['01 基础教学楼',233,594,334,756,'teach','jx01'],
+ ['08 专业实验室',402,165,488,270,'teach'],['09 专业实验室',500,165,597,270,'teach'],
+ ['06 综合实验实训楼',402,298,527,350,'teach'],['综合楼 · 航空文化馆',402,374,517,474,'culture','aero'],
+ ['图书馆',402,505,513,600,'library','lib'],['02 基础实验楼',402,670,490,750,'teach'],
+ ['专家公寓',720,132,1000,436,'apt'],['体育馆',840,500,935,620,'gym','gym'],
+ ['东苑餐厅',522,735,598,805,'canteen','dongyuan'],['西苑餐厅',176,752,226,815,'canteen'],
+ ['训练馆',282,950,318,1020,'gym'],['行政办公楼',430,897,500,948,'admin'],['后勤管理处',604,688,698,710,'admin'],
+ ['20号楼',100,693,160,718,'dorm'],['21号楼',100,725,160,750,'dorm'],['22号楼',100,768,160,793,'dorm'],
+ ['23号楼',100,800,160,825,'dorm'],['24号楼',100,838,160,860,'dorm'],['25号楼',100,868,160,892,'dorm'],
+ ['1号楼',250,792,310,815,'dorm'],['2号楼',250,822,310,847,'dorm'],['3号楼',250,855,310,880,'dorm'],
+ ['4号楼',345,872,405,895,'dorm'],['5号楼',345,903,405,927,'dorm'],['6号楼',345,935,405,960,'dorm'],
+ ['7号楼',440,800,498,825,'dorm'],['8号楼',440,832,498,857,'dorm'],['9号楼',440,862,498,887,'dorm'],
+ ['10号楼',615,718,695,742,'dorm'],['11号楼',615,750,695,774,'dorm'],['12号楼',615,788,695,812,'dorm'],['13号楼',615,820,695,845,'dorm'],
+ ['14号楼',718,677,772,700,'dorm'],['15号楼',718,707,772,730,'dorm'],['16号楼',718,738,772,762,'dorm'],
+ ['19号楼',792,677,844,700,'dorm'],['17号楼',792,707,844,730,'dorm'],['18号楼',792,738,844,762,'dorm'],
+ ['26号楼',862,677,914,700,'dorm'],['27号楼',862,707,914,730,'dorm'],
+].map(([name,x1,y1,x2,y2,style,lm])=>({name,x1,y1,x2,y2,style,lm}));
+BLDS.forEach(b=>solidArea(b.x1,b.y1,b.x2,b.y2,B));
+// 5) 中轴绿化带（北门向南的行道树）
+for(let j=8;j<48;j++)for(let i=22;i<=23;i++)if(map[j][i]===G&&j%2===0)map[j][i]=TR;
+// 零星树木（只种在草地上，不堵道路）
+const TREES=[[600,620],[560,640],[620,665],[540,672],[640,500],[110,560],[180,560],[270,560],[300,780],[460,780],[640,860],[740,780],[900,770],[800,456],[260,140],[480,140],[90,140],[160,140],[60,640],[430,990],[470,975]];
+TREES.forEach(([x,y])=>{const i=Math.floor(x/T),j=Math.floor(y/T);if(map[j]&&map[j][i]===G)map[j][i]=TR});
+// 6) 围墙行道树
+const nb=[[1,0],[-1,0],[0,1],[0,-1]];
+const edge=[];for(let j=0;j<H;j++)for(let i=0;i<W;i++){if(!inT(i,j))continue;if(nb.some(([a,b])=>{const x=i+a,y=j+b;return x<0||y<0||x>=W||y>=H||!inT(x,y)}))edge.push([i,j])}
+edge.forEach(([i,j])=>map[j][i]=TR);
+// 7) 四个校门
+const GATES=[{name:'北门',r:[336,90,400,124],lx:368,ly:104},{name:'西门',r:[40,532,90,578],lx:58,ly:555},{name:'东门',r:[980,440,1016,462],lx:992,ly:451},{name:'南门',r:[492,950,540,995],lx:516,ly:975}];
+GATES.forEach(g=>{const[x1,y1,x2,y2]=g.r;for(let j=Math.floor(y1/T);j<=Math.floor((y2-1)/T);j++)for(let i=Math.floor(x1/T);i<=Math.floor((x2-1)/T);i++)if(map[j]&&map[j][i]===TR)map[j][i]=R});
+const solid=v=>v===B||v===WA||v===TR||v===OUT||v===ST||v===BB;
+
+/* ================== 离屏绘制整张地图 ================== */
+const mapCv=document.createElement('canvas');mapCv.width=W*T;mapCv.height=H*T;
+const m=mapCv.getContext('2d');
+const hsh=(i,j)=>Math.abs(((i*73856093)^(j*19349663))%11);
+function drawTile(i,j){
+ const v=map[j][i],X=i*T,Y=j*T,h=hsh(i,j);
+ const grass=['#5aa96a','#62b273','#579f65'][h%3];
+ if(v===OUT){m.fillStyle='#d5d9e0';m.fillRect(X,Y,T,T);if(h===2){m.fillStyle='#c9ced7';m.fillRect(X+4,Y+4,3,3)}return}
+ if(v===ST){m.fillStyle='#8d929c';m.fillRect(X,Y,T,T);if(h<2){m.fillStyle='#9aa0aa';m.fillRect(X+3,Y+7,6,2)}return}
+ m.fillStyle=grass;m.fillRect(X,Y,T,T);
+ if(v===G&&h===3){m.fillStyle='#7cc58a';m.fillRect(X+4,Y+6,2,2);m.fillRect(X+10,Y+11,2,2)}
+ if(v===R){m.fillStyle='#ddd5bd';m.fillRect(X,Y,T,T);if(h===5){m.fillStyle='#cfc6aa';m.fillRect(X+5,Y+9,3,2)}}
+ if(v===PL){m.fillStyle=(i+j)%2?'#ece5d2':'#e2dac4';m.fillRect(X,Y,T,T)}
+ if(v===WA){m.fillStyle='#4f9be0';m.fillRect(X,Y,T,T);m.fillStyle='#85c3f0';if((i+j)%3===0)m.fillRect(X+3,Y+6,6,2)}
+ if(v===TK){m.fillStyle='#c4553f';m.fillRect(X,Y,T,T);m.fillStyle='#e19b8a';m.fillRect(X,Y+7,T,1)}
+ if(v===FD){m.fillStyle=(j%2)?'#3f9a55':'#46a35c';m.fillRect(X,Y,T,T)}
+ if(v===CT){m.fillStyle='#7fb7b0';m.fillRect(X,Y,T,T);m.fillStyle='#e8f3f1';if(h===4)m.fillRect(X,Y+7,T,1)}
+ if(v===TR){m.fillStyle='#3c6e3f';m.fillRect(X+6,Y+11,4,5);m.fillStyle='#2f7a43';m.fillRect(X+2,Y+2,12,10);m.fillStyle='#45a05c';m.fillRect(X+4,Y+3,6,4)}
+ if(v===BB){m.fillStyle='#4e9a58';m.fillRect(X,Y,T,T);m.fillStyle='#2f7a43';for(let k=2;k<T;k+=5)m.fillRect(X+k,Y,2,T);m.fillStyle='#8fd18f';m.fillRect(X+4,Y+3,3,2);m.fillRect(X+11,Y+9,3,2)}
+}
+for(let j=0;j<H;j++)for(let i=0;i<W;i++)drawTile(i,j);
+function shade(hex,k){const n=parseInt(hex.slice(1),16);const f=c=>Math.min(255,Math.max(0,c*k|0));return `rgb(${f(n>>16)},${f(n>>8&255)},${f(n&255)})`}
+const STYLE={teach:'#A6A1DD',research:'#8CC3EA',green:'#9ACB7A',culture:'#6E7CC6',library:'#C98463',apt:'#B7BBC3',gym:'#7EA6CE',canteen:'#24468F',dorm:'#E8C9A0',admin:'#E2C098'};
+const sn=v=>Math.round(v/4)*4;
+BLDS.forEach(b=>{
+ const X=sn(b.x1),Y=sn(b.y1),w=sn(b.x2)-X,h=sn(b.y2)-Y,col=STYLE[b.style];
+ m.fillStyle='rgba(0,0,0,.22)';m.fillRect(X+4,Y+4,w,h);
+ m.fillStyle=shade(col,.72);m.fillRect(X,Y,w,h);
+ m.fillStyle=col;m.fillRect(X,Y,w,h-(h>30?8:4));
+ m.fillStyle=shade(col,1.18);m.fillRect(X,Y,w,3);
+ const win=b.style==='canteen'?'#f7d77a':'#fdf7dc';
+ if(b.style==='apt'){for(let k=0;k<5;k++){const bx=X+16+k*54;m.fillStyle=shade(col,.85);m.fillRect(bx,Y+28,40,h-60);m.fillStyle='#eef0f3';for(let wy=Y+36;wy<Y+h-40;wy+=12)m.fillRect(bx+6,wy,28,4)}}
+ else if(b.style==='dorm'){m.fillStyle='#fff6e3';for(let wx=X+4;wx<X+w-4;wx+=7)m.fillRect(wx,Y+7,4,4)}
+ else{m.fillStyle=win;for(let wx=X+6;wx<X+w-7;wx+=9)for(let wy=Y+9;wy<Y+h-14;wy+=10)m.fillRect(wx,wy,5,5)}
+ if(b.style==='canteen'&&b.lm){m.fillStyle='#1b3570';m.fillRect(X+w/2-20,Y-10,40,10);m.fillRect(X+w/2-12,Y-16,24,6)}
+ if(b.style==='gym'&&w>60){m.fillStyle='#cfe3f5';m.fillRect(X+8,Y+8,w-16,10)}
+ if(b.lm){m.fillStyle='#3a2a1c';m.fillRect(X+w/2-4,Y+h-8,8,8)}
+});
+// 航空文化馆屋顶飞机模型
+(()=>{const X=440,Y=360;m.fillStyle='#eef3ff';m.fillRect(X,Y+6,40,5);m.fillRect(X+14,Y,8,18);m.fillRect(X+2,Y+3,4,10);m.fillStyle='#E56458';m.fillRect(X+36,Y+6,4,5)})();
+// 校门：红色门柱
+GATES.forEach(g=>{const[x1,y1,x2,y2]=g.r;m.fillStyle='#b8423a';if(x2-x1>y2-y1){m.fillRect(sn(x1)-4,sn(y1)+4,8,12);m.fillRect(sn(x2)-4,sn(y1)+4,8,12)}else{m.fillRect(sn(x1)+4,sn(y1)-6,12,8);m.fillRect(sn(x1)+4,sn(y2)-2,12,8)}});
+
+/* ================== 主游戏 ================== */
+const cv=document.getElementById('cv'),c=cv.getContext('2d');
+let scale=3,vw=0,vh=0,dpr=1;
+function resize(){dpr=window.devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;scale=Math.max(2,Math.round(Math.min(innerWidth/600,innerHeight/380)))*dpr;vw=cv.width/scale;vh=cv.height/scale;c.imageSmoothingEnabled=false}
+addEventListener('resize',resize);resize();
+const START={x:516,y:930};
+const P={x:START.x,y:START.y,dir:'up',step:0};
+const keys={};
+const KM={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};
+addEventListener('keydown',e=>{if(!playing())return;if(KM[e.code]){keys[KM[e.code]]=1;e.preventDefault()}if(e.code==='Space'||e.code==='KeyE'||e.code==='Enter'){e.preventDefault();interact()}});
+addEventListener('keyup',e=>{if(KM[e.code])keys[KM[e.code]]=0});
+document.querySelectorAll('.dpad [data-d]').forEach(b=>{const d=b.dataset.d;const on=e=>{e.preventDefault();keys[d]=1},off=e=>{e.preventDefault();keys[d]=0};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointerleave',off);b.addEventListener('pointercancel',off)});
+document.getElementById('aBtn').addEventListener('pointerdown',e=>{e.preventDefault();interact()});
+function playing(){return document.getElementById('game').classList.contains('on')&&!document.querySelector('.modal.on')}
+function blocked(x,y){const pts=[[x-5,y-2],[x+5,y-2],[x-5,y+5],[x+5,y+5]];return pts.some(([px,py])=>{const i=Math.floor(px/T),j=Math.floor(py/T);if(i<0||j<0||i>=W||j>=H)return true;return solid(map[j][i])})}
+let near=null,last=0;
+function rectDist(l){const[x0,y0,x1,y1]=l.r;const dx=Math.max(x0-P.x,0,P.x-x1),dy=Math.max(y0-P.y,0,P.y-y1);return Math.hypot(dx,dy)}
+function update(dt){
+ if(!playing())return;
+ const sp=80*dt;let dx=0,dy=0;
+ if(keys.up){dy-=sp;P.dir='up'}if(keys.down){dy+=sp;P.dir='down'}
+ if(keys.left){dx-=sp;P.dir='left'}if(keys.right){dx+=sp;P.dir='right'}
+ if(dx&&dy){dx*=.707;dy*=.707}
+ if(dx&&!blocked(P.x+dx,P.y))P.x+=dx;
+ if(dy&&!blocked(P.x,P.y+dy))P.y+=dy;
+ P.moving=!!(dx||dy);if(P.moving)P.step+=dt*8;
+ near=null;let best=22;
+ LANDMARKS.forEach(l=>{const d=rectDist(l);if(d<best){best=d;near=l}});
+ const h=document.getElementById('hint');
+ if(near){h.style.display='block';const got=save.got.includes(near.id);h.innerHTML=`${got?'✅':'📍'} ${near.name}<kbd>空格</kbd>${got?'回顾地标':'进入任务'}`}else h.style.display='none';
+}
+function drawPlayer(x,y){
+ const bob=P.moving?Math.round(Math.sin(P.step)):0,leg=P.moving?(Math.sin(P.step)>0?1:-1):0;
+ c.fillStyle='rgba(0,0,0,.25)';c.fillRect(x-5,y+4,10,3);
+ c.fillStyle='#1d2236';c.fillRect(x-4,y+1,3,4+leg);c.fillRect(x+1,y+1,3,4-leg);
+ c.fillStyle='#2783DE';c.fillRect(x-5,y-7+bob,10,9);
+ c.fillStyle='#3FD0E0';c.fillRect(x-5,y-3+bob,10,1);
+ c.fillStyle='#f2c9a0';c.fillRect(x-4,y-14+bob,8,7);
+ c.fillStyle='#2a1d14';c.fillRect(x-4,y-15+bob,8,3);
+ if(P.dir==='left')c.fillRect(x+2,y-12+bob,2,3);else if(P.dir==='right')c.fillRect(x-4,y-12+bob,2,3);else if(P.dir==='up')c.fillRect(x-4,y-12+bob,8,4);
+ if(P.dir!=='up'){c.fillStyle='#1d2236';if(P.dir!=='right')c.fillRect(x-3,y-11+bob,1,2);if(P.dir!=='left')c.fillRect(x+2,y-11+bob,1,2)}
+}
+const FONT='"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif';
+function badge(text,sx,sy,bg,fg,size){c.font=`bold ${size}px ${FONT}`;const tw=c.measureText(text).width+size*.9,th=size*1.55;const x=Math.round(sx-tw/2),y=Math.round(sy-th);c.fillStyle=bg;c.fillRect(x,y,tw,th);c.fillStyle=fg;c.textAlign='center';c.textBaseline='middle';c.fillText(text,sx,y+th/2+1)}
+let cam={x:0,y:0};
+function render(t){
+ c.setTransform(1,0,0,1,0,0);c.fillStyle='#d5d9e0';c.fillRect(0,0,cv.width,cv.height);
+ let cx=P.x-vw/2,cy=P.y-vh/2;
+ cx=W*T<vw?(W*T-vw)/2:Math.max(0,Math.min(cx,W*T-vw));cy=H*T<vh?(H*T-vh)/2:Math.max(0,Math.min(cy,H*T-vh));
+ cam={x:cx,y:cy};
+ const ox=Math.round(-cx*scale),oy=Math.round(-cy*scale);
+ c.setTransform(scale,0,0,scale,ox,oy);c.imageSmoothingEnabled=false;c.drawImage(mapCv,0,0);
+ c.setTransform(1,0,0,1,0,0);
+ const S=(x,y)=>[x*scale+ox,y*scale+oy];
+ const fs=12*dpr;
+ // 普通建筑名称
+ c.textAlign='center';c.textBaseline='middle';
+ BLDS.forEach(b=>{if(b.lm)return;const[sx,sy]=S((b.x1+b.x2)/2,(b.y1+b.y2)/2-(b.y2-b.y1>30?4:2));if(sx<-200||sy<-50||sx>cv.width+200||sy>cv.height+50)return;c.font=`bold ${fs}px ${FONT}`;c.fillStyle=b.style==='canteen'?'#fff':'#2a2f45';c.fillText(b.name,sx,sy)});
+ // 道路名
+ c.font=`bold ${fs}px ${FONT}`;c.fillStyle='#fff';
+ [['平 安 大 道',560,80],['相 济 路',820,815],['文苑西路',18,300],['龙子湖东路',1022,280]].forEach(([n,x,y])=>{const[sx,sy]=S(x,y);if(x<40||x>1015){[...n].forEach((ch,k)=>c.fillText(ch,sx,sy+k*fs*1.2))}else c.fillText(n,sx,sy)});
+ // 校门
+ GATES.forEach(g=>{const[sx,sy]=S(g.lx,g.ly);badge(g.name,sx,sy+fs*.8,'#b8423a','#fff',fs)});
+ // 地标徽标
+ LANDMARKS.forEach(l=>{if(l.id==='nanmen')return;const got=save.got.includes(l.id);const[x0,y0,x1]=l.r;const[sx,sy]=S((x0+x1)/2,l.id==='qinhu'?552:y0);
+  const pulse=got?1:.75+.25*Math.sin(t/220);
+  c.globalAlpha=pulse;badge((got?'✓ ':'● ')+l.name,sx,sy-2*dpr,got?'#2f7f52':'#F29A3B',got?'#fff':'#1b1206',fs*1.08);c.globalAlpha=1});
+ c.setTransform(scale,0,0,scale,ox,oy);drawPlayer(Math.round(P.x),Math.round(P.y));
+ drawMini();
+}
+// 小地图
+const mini=document.getElementById('mini-map'),mc=mini.getContext('2d');
+function drawMini(){
+ const w=mini.width,h=mini.height,k=w/(W*T);mc.imageSmoothingEnabled=true;mc.drawImage(mapCv,0,0,w,h);
+ mc.strokeStyle='rgba(11,22,51,.9)';mc.lineWidth=2;mc.strokeRect(cam.x*k,cam.y*k,vw*k,vh*k);
+ LANDMARKS.forEach(l=>{const[x0,y0,x1,y1]=l.r;mc.fillStyle=save.got.includes(l.id)?'#2f7f52':'#F29A3B';mc.fillRect((x0+x1)/2*k-3,(y0+y1)/2*k-3,6,6)});
+ mc.fillStyle='#E5352B';mc.fillRect(P.x*k-4,P.y*k-4,8,8);mc.strokeStyle='#fff';mc.lineWidth=1.5;mc.strokeRect(P.x*k-4,P.y*k-4,8,8);
+}
+function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt);if(document.getElementById('game').classList.contains('on'))render(t);requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+
+/* ================== 交互：地标卡 / 问答 / 印章 ================== */
+function stampCanvas(l,size,got){
+ const s=document.createElement('canvas');s.width=s.height=size;const g=s.getContext('2d');
+ const u=size/12;g.fillStyle=got?l.color:'#c9c3b3';
+ const ring=[[4,0],[5,0],[6,0],[7,0],[2,1],[3,1],[8,1],[9,1],[1,2],[10,2],[1,3],[10,3],[0,4],[11,4],[0,5],[11,5],[0,6],[11,6],[0,7],[11,7],[1,8],[10,8],[1,9],[10,9],[2,10],[3,10],[8,10],[9,10],[4,11],[5,11],[6,11],[7,11]];
+ ring.forEach(([x,y])=>g.fillRect(x*u,y*u,u,u));
+ g.fillStyle=got?'#fff':'#ece7da';g.fillRect(2*u,2*u,8*u,8*u);g.fillRect(1*u,4*u,10*u,4*u);g.fillRect(4*u,1*u,4*u,10*u);
+ g.fillStyle=got?l.color:'#c9c3b3';g.font=`bold ${Math.round(size*.36)}px ${FONT}`;g.textAlign='center';g.textBaseline='middle';g.fillText(l.glyph,size/2,size/2+1);
+ return s;
+}
+function openModal(id){document.getElementById(id).classList.add('on');for(const k in keys)keys[k]=0}
+function closeModal(id){document.getElementById(id).classList.remove('on')}
+document.addEventListener('click',e=>{const id=e.target.dataset&&e.target.dataset.close;if(id)closeModal(id);if(e.target.classList.contains('modal'))e.target.classList.remove('on')});
+addEventListener('keydown',e=>{if(e.code==='Escape')document.querySelectorAll('.modal.on').forEach(m=>m.classList.remove('on'))});
+document.getElementById('hint').addEventListener('click',interact);
+function interact(){if(!playing()||!near)return;showLandmark(near)}
+function showLandmark(l){
+ const got=save.got.includes(l.id);const card=document.getElementById('lmCard');
+ card.innerHTML=`<span class="tag px">${l.en}</span><h2>${l.name}</h2><p>${l.intro}</p><p class="story">${l.story}</p>`+
+ (got?`<div class="got-stamp" id="gs"></div><div class="row"><button class="b2" data-close="lmModal">继续漫游</button></div>`:
+ `<div class="quiz"><h4>🚀 地标任务：${l.q}</h4>${l.opts.map((o,i)=>`<button class="opt" data-i="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}<p style="font-size:12px;color:#8a93ad;margin-top:8px">${QUIZ_NOTE}</p></div><div class="row"><button class="b2 alt" data-close="lmModal">稍后再来</button></div>`);
+ if(got){const gs=card.querySelector('#gs');gs.appendChild(stampCanvas(l,44,true));gs.append('已收集「'+l.name+'」纪念章')}
+ card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+  const i=+b.dataset.i;
+  if(i===l.a){b.classList.add('ok');card.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+   save.got.push(l.id);persist();refreshHud();
+   const q=card.querySelector('.quiz');const gs=document.createElement('div');gs.className='got-stamp';gs.appendChild(stampCanvas(l,44,true));gs.append('回答正确！获得「'+l.name+'」纪念章');q.appendChild(gs);
+   card.querySelector('.row').innerHTML='<button class="b2" data-close="lmModal">继续漫游</button>';
+   toast(save.got.length===LANDMARKS.length?'🎉 全部地标已解锁！去生成纪念卡吧':'获得印章 '+save.got.length+' / '+LANDMARKS.length);
+  }else{b.classList.add('no');b.disabled=true}
+ });
+ openModal('lmModal');
+}
+let tt;function toast(s){const t=document.getElementById('toast');t.textContent=s;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',2600)}
+function refreshHud(){
+ document.getElementById('cnt').textContent=save.got.length;document.getElementById('tot').textContent=LANDMARKS.length;
+ document.getElementById('mini').innerHTML=LANDMARKS.map(l=>`<i class="${save.got.includes(l.id)?'got':''}" title="${l.name}"></i>`).join('');
+}
+refreshHud();
+
+/* ================== 手帐 ================== */
+function openJournal(){
+ const n=save.got.length,N=LANDMARKS.length;const card=document.getElementById('jCard');
+ card.innerHTML=`<span class="tag px">CAMPUS JOURNAL</span><h2>校园探索手帐</h2><p style="margin:0">已解锁 ${n} / ${N} 个地标</p><div class="progress"><div style="width:${n/N*100}%"></div></div><div class="journal-list" id="jl"></div><div class="row"><button class="b2 alt" data-close="jModal">关闭</button><button class="b2" id="toCard">生成纪念卡</button></div>`;
+ const jl=card.querySelector('#jl');
+ LANDMARKS.forEach(l=>{const got=save.got.includes(l.id);const d=document.createElement('div');d.className='jitem'+(got?'':' lock');d.appendChild(stampCanvas(l,40,got));const t=document.createElement('div');t.innerHTML=`<b>${got?l.name:'？？？'}</b><small>${got?l.story:'靠近地标并完成任务后解锁'}</small>`;d.appendChild(t);jl.appendChild(d)});
+ card.querySelector('#toCard').onclick=()=>{closeModal('jModal');openMemory()};
+ openModal('jModal');
+}
+
+/* ================== 纪念卡 ================== */
+function openMemory(){
+ const cvm=document.getElementById('memCv'),g=cvm.getContext('2d');
+ const grd=g.createLinearGradient(0,0,0,420);grd.addColorStop(0,'#13244F');grd.addColorStop(1,'#0B1633');g.fillStyle=grd;g.fillRect(0,0,640,420);
+ for(let i=0;i<60;i++){g.fillStyle=`rgba(255,255,255,${.3+((i*37)%7)/10})`;g.fillRect((i*97)%640,(i*53)%140,2,2)}
+ g.imageSmoothingEnabled=true;g.drawImage(mapCv,440,40,170,199);g.strokeStyle='#fff';g.lineWidth=3;g.strokeRect(440,40,170,199);
+ g.fillStyle='#3FD0E0';g.font='bold 14px "Courier New",monospace';g.textAlign='left';g.textBaseline='alphabetic';g.fillText('ZUA · CLOUD CAMPUS TOUR',32,44);
+ g.fillStyle='#fff';g.font=`bold 30px ${FONT}`;g.fillText('云端漫游纪念卡',32,86);
+ g.font=`16px ${FONT}`;g.fillStyle='rgba(255,255,255,.75)';
+ const n=save.got.length;g.fillText(`已探索地标 ${n} / ${LANDMARKS.length}`,32,118);
+ const d=new Date();g.fillText(`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`,32,142);
+ LANDMARKS.forEach((l,i)=>{const x=32+(i%3)*134,y=166+Math.floor(i/3)*64;const got=save.got.includes(l.id);g.drawImage(stampCanvas(l,48,got),x,y);g.fillStyle=got?'#fff':'rgba(255,255,255,.35)';g.font=`13px ${FONT}`;g.textAlign='left';g.fillText(l.name,x+54,y+29)});
+ g.fillStyle=n===LANDMARKS.length?'#F29A3B':'rgba(255,255,255,.55)';g.font=`bold 15px ${FONT}`;
+ g.fillText(n===LANDMARKS.length?'★ 校园探索全部完成':'继续探索，解锁更多印章',32,392);
+ g.fillStyle='rgba(255,255,255,.5)';g.font=`12px ${FONT}`;g.textAlign='center';g.fillText('郑州航空航天大学 · 像素校园',525,262);
+ openModal('mModal');
+}
+document.getElementById('saveCard').onclick=()=>{const a=document.createElement('a');a.download='郑航云端漫游纪念卡.png';a.href=document.getElementById('memCv').toDataURL('image/png');a.click()};
+
+/* ================== 页面切换 ================== */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='game')resize()}
+document.getElementById('startBtn').onclick=()=>{show('game');if(!save.seen){save.seen=1;persist();setTimeout(()=>toast('从南门出发，靠近橙色标记开始探索'),300)}};
+document.getElementById('homeBtn').onclick=()=>show('home');
+document.getElementById('jBtn').onclick=openJournal;
+document.getElementById('navJournal').onclick=e=>{e.preventDefault();openJournal()};
+document.getElementById('mBtn').onclick=openMemory;
+document.getElementById('resetBtn').onclick=()=>{if(confirm('确定清空所有探索进度？')){save={got:[]};persist();refreshHud();P.x=START.x;P.y=START.y;toast('进度已重置')}};
+
+
+/* ================== 首页：星空 + 像素主视觉 ================== */
+(function(){
+ const s=document.getElementById('stars'),g=s.getContext('2d');
+ function draw(){s.width=innerWidth;s.height=innerHeight;for(let i=0;i<120;i++){g.fillStyle=`rgba(255,255,255,${(i%5+2)/10})`;const z=i%7===0?3:2;g.fillRect((i*137.5)%s.width,(i*71.3)%s.height,z,z)}}
+ draw();addEventListener('resize',draw);
+ const h=document.getElementById('heroArt'),a=h.getContext('2d');
+ let t0=0;
+ function art(t){
+  a.fillStyle='#0f1f48';a.fillRect(0,0,320,240);
+  for(let i=0;i<40;i++){a.fillStyle=`rgba(255,255,255,${(i%4+3)/10})`;a.fillRect((i*83)%320,(i*47)%130,1+(i%3===0),1+(i%3===0))}
+  a.strokeStyle='rgba(63,208,224,.55)';a.lineWidth=1;a.beginPath();a.ellipse(160,70,130,30,-.15,0,Math.PI*2);a.stroke();
+  const ang=t/2200;const ox=160+Math.cos(ang)*130*Math.cos(-.15)-Math.sin(ang)*30*Math.sin(-.15),oy=70+Math.cos(ang)*130*Math.sin(-.15)+Math.sin(ang)*30*Math.cos(-.15);
+  a.fillStyle='#F29A3B';a.fillRect(Math.round(ox)-2,Math.round(oy)-2,4,4);
+  // 飞机
+  const px=((t/40)%420)-60;a.fillStyle='#eef3ff';a.fillRect(px,40,18,3);a.fillRect(px+6,36,4,11);a.fillRect(px,38,2,7);
+  // 建筑群
+  a.fillStyle='#1b3570';a.fillRect(20,120,60,60);a.fillRect(240,110,62,70);
+  a.fillStyle='#2783DE';a.fillRect(90,100,140,80);a.fillStyle='#3a95ec';a.fillRect(90,100,140,6);
+  a.fillStyle='#1b3570';a.fillRect(150,78,20,22);a.fillStyle='#3FD0E0';a.fillRect(156,62,8,16);a.fillStyle='#E56458';a.fillRect(156,58,8,4);
+  a.fillStyle='#fdf2b8';for(let x=98;x<224;x+=12)for(let y=112;y<170;y+=14)if((x+y+(t/900|0))%5)a.fillRect(x,y,6,7);
+  a.fillStyle='#fdf2b8';for(let x=28;x<74;x+=12)for(let y=128;y<172;y+=12)a.fillRect(x,y,5,5);for(let x=248;x<296;x+=12)for(let y=120;y<172;y+=12)a.fillRect(x,y,5,5);
+  a.fillStyle='#3a2a1c';a.fillRect(152,160,16,20);
+  // 地面与道路
+  a.fillStyle='#3f8f55';a.fillRect(0,180,320,60);a.fillStyle='#d8cfb6';a.fillRect(140,180,40,60);a.fillRect(0,206,320,12);
+  a.fillStyle='#2f7a43';[[20,186],[50,222],[96,188],[214,188],[262,224],[292,190]].forEach(([x,y])=>{a.fillRect(x,y,12,10);a.fillStyle='#3c6e3f';a.fillRect(x+4,y+10,4,4);a.fillStyle='#2f7a43'});
+  // 角色
+  const bob=Math.round(Math.sin(t/180));a.fillStyle='#2783DE';a.fillRect(156,216+bob,8,8);a.fillStyle='#f2c9a0';a.fillRect(157,210+bob,6,6);a.fillStyle='#2a1d14';a.fillRect(157,209+bob,6,2);
+  a.fillStyle='#F29A3B';a.fillRect(158,196-bob,4,4);a.fillRect(159,200-bob,2,3);
+  requestAnimationFrame(art);
+ }
+ requestAnimationFrame(art);
+})();
+</script>
+</body>
+</html>
